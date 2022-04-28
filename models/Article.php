@@ -2,7 +2,9 @@
 
 namespace app\models;
 
+use app\models\Category;
 use Yii;
+
 
 /**
  * This is the model class for table "article".
@@ -75,5 +77,22 @@ class Article extends \yii\db\ActiveRecord
         return ($this->image) ? '/uploads/' . $this->image : '/no-image.png';
     }
 
+    public function getCategory()
+    {
+        return $this->hasOne(Category::className(), ['id'=>'category_id']);
+    }
+
+    public function saveCategory($category_id)
+    {
+        $category = Category::findOne($category_id);
+        if($category!=null)
+        {
+            $this->link('category', $category);
+            return true;
+        }
+
+
+
+    }
 
 }
