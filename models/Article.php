@@ -4,6 +4,7 @@ namespace app\models;
 
 use app\models\Category;
 use Yii;
+use yii\data\Pagination;
 use yii\helpers\ArrayHelper;
 
 
@@ -26,6 +27,7 @@ use yii\helpers\ArrayHelper;
  */
 class Article extends \yii\db\ActiveRecord
 {
+
     /**
      * {@inheritdoc}
      */
@@ -105,15 +107,12 @@ class Article extends \yii\db\ActiveRecord
         return ArrayHelper::getColumn($selectedIds, 'id');
     }
 
-    public function  saveTags($tags)
+    public function saveTags($tags)
     {
-        if (is_array($tags))
-        {
+        if (is_array($tags)) {
             $this->clearCurrentTags();
-
-            foreach ($tags as $tag_id)
-            {
-                $tag =Tag::findOne($tag_id);
+            foreach ($tags as $tag_id) {
+                $tag = Tag::findOne($tag_id);
                 $this->link('tags', $tag);
             }
         }
@@ -121,8 +120,38 @@ class Article extends \yii\db\ActiveRecord
 
     public function clearCurrentTags()
     {
-
         ArticleTag::deleteAll(['article_id'=>$this->id]);
     }
+
+    public function getDate()
+    {
+        return Yii::$app->formatter->asDate($this->date);
+    }
+
+    public static function getAll($pageSize = 5)
+    {
+        $query = Article::find();
+        $count = $query->count();
+        $pages = new Pagination(['totalCount' => $count, 'pageSize'=>$pageSize]);
+        $articles = $query->offset($pages->offset)
+            ->limit($pages->limit)
+            ->all();
+
+        $data['articles']= $articles;
+        $data['pages']=$pages;
+
+        return $data;
+
+    }
+
+    public static function getPopular ()
+    {
+        return Article::find()->orderBy('viewed desc')->limit(3)->all();
+    }
+    public static function getRecent ()
+    {
+        return Article::find()->orderBy('date asc')->limit(4)->all();
+    }
+
 
 }
